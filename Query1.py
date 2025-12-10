@@ -6,7 +6,7 @@
         "spark.executor.cores": "1"
     }
 }
-
+#commit test
 #Υλοποίηση με RDDs
 from pyspark.sql import SparkSession
 import csv
