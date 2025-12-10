@@ -7,7 +7,7 @@
     }
 }
 
-#Υλοποίηση με RDDs
+#Υλοποίηση με 
 from pyspark.sql import SparkSession
 import csv
 import time
