@@ -17,8 +17,9 @@ Compatible versions of Apache Spark and Apache Sedona
 ---------------------------------------------------------------------
 
 1. Clone the repository
-2. run the install.sh
-3. After successfull installation of all the prerequisites run the code for each Query by using
+2. Give the installer.sh file persmission to execute 
+3. Run the install.sh
+4. After successfull installation of all the prerequisites run the code for each Query by using
 the command
 
 python3 <QueryX.py>
