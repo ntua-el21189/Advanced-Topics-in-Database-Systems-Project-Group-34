@@ -43,18 +43,18 @@ crimes_schema = StructType([
     StructField("LON", FloatType())
 ])
 
-crimes_df1 = spark.read.csv("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2010_2019.csv", \
+crimes_df1 = spark.read.csv("./data/LA_Crime_Data_2010_2019.csv", \
                          header=True, \
                          schema= crimes_schema)
 
-crimes_df2 =  spark.read.csv("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv", \
+crimes_df2 =  spark.read.csv("./data/LA_Crime_Data_2020_2025.csv", \
                          header=True, \
                          schema= crimes_schema)
 REcodes_schema = StructType([
     StructField("Vict_Descent", StringType()),
     StructField("Vict_Descent_Full", StringType())
 ])
-REcodes_df =spark.read.csv("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/RE_codes.csv", \
+REcodes_df =spark.read.csv("./data/RE_codes.csv", \
                          header=True, \
                          schema= REcodes_schema)
 REcodes_df.printSchema()
