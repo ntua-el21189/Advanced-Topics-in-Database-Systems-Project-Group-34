@@ -13,6 +13,8 @@ Apache Sedona jars (sedona-spark-shaded & geotools-wrapper)
 
 Compatible versions of Apache Spark and Apache Sedona
 
+The data must be downloaded locally and saved in a file named "data" within the repository's directory.
+
 **Set up instructions**
 ---------------------------------------------------------------------
 
