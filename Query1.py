@@ -14,11 +14,11 @@ import time
 
 sc = spark.sparkContext
 
-rdd1 = sc.textFile("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2010_2019.csv")\
+rdd1 = sc.textFile("./data/LA_Crime_Data_2010_2019.csv")\
     .map(lambda line: next(csv.reader([line])))\
     .map(lambda x: [x[9], x[11]]) 
 
-rdd2 = sc.textFile("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv")\
+rdd2 = sc.textFile("./data/LA_Crime_Data_2020_2025.csv")\
     .map(lambda line: next(csv.reader([line])))\
     .map(lambda x: [x[9], x[11]]) 
 
@@ -91,13 +91,13 @@ crimes_schema = StructType([
     StructField("LON",FloatType())
 ])
 
-crimes_df1 = spark.read.csv("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2010_2019.csv", \
+crimes_df1 = spark.read.csv("./data/LA_Crime_Data_2010_2019.csv", \
                          header=True, \
                          schema= crimes_schema)
 
 crimes_df1 = crimes_df1.select(col("Crm Cd Desc"), col("Vict Age"))
 
-crimes_df2 =  spark.read.csv("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv", \
+crimes_df2 =  spark.read.csv("./data/LA_Crime_Data_2020_2025.csv", \
                          header=True, \
                          schema= crimes_schema)
 

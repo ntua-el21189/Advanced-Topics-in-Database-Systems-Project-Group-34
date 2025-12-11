@@ -45,13 +45,13 @@ crimes_schema = StructType([
     StructField("LON",FloatType())
 ])
 
-crimes_df1 = spark.read.csv("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2010_2019.csv", \
+crimes_df1 = spark.read.csv("./data/LA_Crime_Data/LA_Crime_Data_2010_2019.csv", \
                          header=True, \
                          schema= crimes_schema)
 
 crimes_df1 = crimes_df1.select(col("DR_NO"), col("LAT"), col("LON"))
 
-crimes_df2 =  spark.read.csv("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv", \
+crimes_df2 =  spark.read.csv("./data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv", \
                          header=True, \
                          schema= crimes_schema)
 crimes_df2 = crimes_df2.select(col("DR_NO"), col("LAT"), col("LON"))
@@ -69,7 +69,7 @@ stations_schema = StructType([
     
 ])
 
-stations_df = spark.read.csv("s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Police_Stations.csv",
+stations_df = spark.read.csv("./data/LA_Police_Stations.csv",
                         header=True,
                         schema=stations_schema)
 stations_df = stations_df.select(col("x"), col("y"), col("DIVISION"))
