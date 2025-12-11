@@ -8,6 +8,9 @@ from pyspark.sql.window import Window
 spark = SparkSession \
     .builder \
     .appName("Q2 DF implementation") \
+    .config("spark.executor.instances", "4") \
+    .config("spark.executor.memory", "2g") \
+    .config("spark.executor.cores", "1") \
     .getOrCreate()
 
 # Define the schema for the Crimes Data Frame 
