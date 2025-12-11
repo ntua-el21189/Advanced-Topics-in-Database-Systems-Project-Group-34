@@ -48,7 +48,7 @@ crimes_schema = StructType([
 ])
 
 crimes_df = spark.read.csv(
-    "s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv",
+    "./data/LA_Crime_Data_2020_2025.csv",
     header=True,
     schema=crimes_schema
 )
@@ -76,7 +76,7 @@ income_schema = StructType([
     StructField("Estimated Median Income", StringType())
 ])
 income_df1 = spark.read.csv(
-    "s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_income_2021.csv",
+    "./data/LA_income_2021.csv",
     sep=";",
     header=True,
     schema=income_schema,
@@ -89,7 +89,7 @@ income_df.printSchema()
 # Create sedona context
 sedona = SedonaContext.create(spark)
 # Read the file from s3
-geojson_path = "s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Census_Blocks_2020.geojson"
+geojson_path = "./data/LA_Census_Blocks_2020.geojson"
 blocks_df = sedona.read.format("geojson") \
             .option("multiLine", "true").load(geojson_path) \
             .selectExpr("explode(features) as features") \
