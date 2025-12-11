@@ -1,6 +1,6 @@
 echo "Installing Java + Python3 + pip..."
 sudo apt-get update -y
-sudo apt-get install -y openjdk-11-jdk python3 python3-pip curl
+sudo apt-get install -y openjdk-17-jdk python3 python3-pip curl
 python3 -m venv ~/spark_env
 source ~/spark_env/bin/activate
 
