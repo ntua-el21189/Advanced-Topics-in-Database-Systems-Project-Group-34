@@ -10,8 +10,8 @@ spark = SparkSession \
     .builder \
     .appName("Q5 solution") \
     .config("spark.executor.instances", "4") \
-    .config("spark.executor.memory", "2g") \
-    .config("spark.executor.cores", "1") \
+    .config("spark.executor.memory", "4g") \
+    .config("spark.executor.cores", "2") \
     .getOrCreate()
 
 # Ορισμός του Schema για τα Crimes
@@ -48,7 +48,7 @@ crimes_schema = StructType([
 ])
 
 crimes_df = spark.read.csv(
-    "./data/LA_Crime_Data_2020_2025.csv",
+    "s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv",
     header=True,
     schema=crimes_schema
 )
@@ -76,7 +76,7 @@ income_schema = StructType([
     StructField("Estimated Median Income", StringType())
 ])
 income_df1 = spark.read.csv(
-    "./data/LA_income_2021.csv",
+    "s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_income_2021.csv",
     sep=";",
     header=True,
     schema=income_schema,
@@ -89,7 +89,7 @@ income_df.printSchema()
 # Create sedona context
 sedona = SedonaContext.create(spark)
 # Read the file from s3
-geojson_path = "./data/LA_Census_Blocks_2020.geojson"
+geojson_path = "s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Census_Blocks_2020.geojson"
 blocks_df = sedona.read.format("geojson") \
             .option("multiLine", "true").load(geojson_path) \
             .selectExpr("explode(features) as features") \
@@ -104,41 +104,49 @@ blocks_df=blocks_df.filter(col("CITY") == "Los Angeles")
 # Print schema
 blocks_df.printSchema()
 
-# Κάνω geometry τις συντεταγμένες του crimes για να μπορέσω να τα τοποθετήσω στa blocks 
-# Convert to geometry
-from pyspark.sql.functions import col
-crimes_df = crimes_df.withColumn(
-    "crime_geom",
-    sf.expr("ST_Point(cast(LON as double), cast(LAT as double))")
-)
-print(crimes_df.show(5))
+print("============================================================================================")
 
+# Join blocks with income data
+import time
+start_time_join_inc=time.time()
 blocks_and_income = blocks_df.join(
     income_df,
     income_df.Zip_Code == blocks_df.ZCTA20
 ).withColumn("Income_per_block", col("HOUSING20") * col("Estimated Median Income"))\
     .select("COMM", "POP20", "Income_per_block", "geometry", "ZCTA20","CITY")
-
+blocks_and_income.show()
+end_time_join_inc=time.time()
+print(f"Execution Time (DataFrame API): {end_time_join_inc - start_time_join_inc:.2f} seconds")
 blocks_and_income.printSchema()
 
+print("============================================================================================")   
 # Join στον τόπο του εγκλήματος και το block στο οποίο ανήκει
 # join condition here is whether the geometry defined in df1.geom is contained
 # within flattened_df.geometry.
-# να προσθέσω το innner εδω
-from pyspark.sql.functions import count,first
-from pyspark.sql.functions import broadcast
 
+from pyspark.sql.functions import count,first
+from pyspark.sql.functions import col
+from pyspark.sql.functions import sum as spark_sum
+import time
+
+
+import time
+start_time_join = time.time()
 crimes_in_block_with_inc = crimes_df \
-    .join(blocks_and_income, ST_Within(crimes_df.crime_geom, blocks_and_income.geometry),"inner")\
-    .groupby(blocks_and_income.geometry).agg(
-        # group by geom to get the blocks
-        first("CITY").alias("CITY"), # σβηστο αν δουλέψουν οι αλλαγες
+    .join(blocks_and_income, ST_Within(crimes_df.crime_geom, blocks_and_income.geometry))\
+    .groupby(blocks_and_income.geometry).agg(#  group by geom to get the blocks
+        first("CITY").alias("CITY"),
         first("Income_per_block").alias("Income_per_block"),
         first("POP20").alias("block_population"),
         first("COMM").alias("COMM"),  # block comm name
         count("*").alias("crime_count")
         )
-crimes_in_block_with_inc.printSchema()
+crimes_in_block_with_inc.show()
+end_time_join = time.time()
+print(f"Execution Time (join): {end_time_join - start_time_join:.2f} seconds")
+crimes_in_block_with_inc.explain(mode="formatted")
+
+print("============================================================================================")
 
 from pyspark.sql.functions import col
 from pyspark.sql.functions import sum as spark_sum
@@ -156,11 +164,18 @@ LA_areas_final.printSchema()
 
 # Θα πρέπει να καταλήξω σε κάτι τέτοιο 
 #clean_stats = final.filter(col("total_population") > 1000)##
+start_time_cor=time.time()
 correlation = LA_areas_final.stat.corr("income_per_capita", "crimes_per_person")
 print("Correlation =", correlation)
+end_time_cor=time.time()
+print(f"Execution Time (cor) : {end_time_cor - start_time_cor:.2f} seconds")
 
+start_time_cor_high=time.time()
 lowest10 = LA_areas_final.orderBy(col("income_per_capita").asc()).limit(10)
 highest10 = LA_areas_final.orderBy(col("income_per_capita").desc()).limit(10)
 subset = lowest10.union(highest10)
 correlation = subset.stat.corr("Income_per_Capita", "Crimes_per_Person")
 print("Correlation =", correlation)
+end_time_cor_high=time.time()
+print(f"Execution Time (cor_high): {end_time_cor_high - start_time_cor_high:.2f} seconds")
+
