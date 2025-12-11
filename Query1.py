@@ -1,18 +1,27 @@
-%%configure -f
-{
-    "conf":{
-        "spark.executor.instances": "4",
-        "spark.executor.memory": "2g",
-        "spark.executor.cores": "1"
-    }
-}
+# %%configure -f
+# {
+#     "conf":{
+#         "spark.executor.instances": "4",
+#         "spark.executor.memory": "2g",
+#         "spark.executor.cores": "1"
+#     }
+# }
+
+from pyspark import SparkConf, SparkContext
+conf = SparkConf()
+conf.set('spark.executor.memory', '2g')
+conf.set('spark.executor.cores', '1')
+conf.set('spark.executor.instances', '4')   
+# Pandas API on Spark automatically uses this Spark context with the configurations set.
+SparkContext(conf=conf)
+
 
 #Υλοποίηση με 
 from pyspark.sql import SparkSession
 import csv
 import time
 
-sc = spark.sparkContext
+sc = spark.sparkContext 
 
 rdd1 = sc.textFile("./data/LA_Crime_Data_2010_2019.csv")\
     .map(lambda line: next(csv.reader([line])))\
