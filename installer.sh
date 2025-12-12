@@ -6,7 +6,8 @@ source ~/spark_env/bin/activate
 
 echo "Installing required Python libraries via pip..."
 python3 -m pip install --upgrade pip
-python3 -m pip install apache-sedona[spark]==1.6.1
+python3 -m pip install pyspark==3.5.1
+python3 -m pip install apache-sedona[spark]==1.6.1 
 
 echo "Creating /jars directory for Sedona .jar files..."
 sudo mkdir -p /jars

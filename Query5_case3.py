@@ -12,6 +12,7 @@ spark = SparkSession \
     .config("spark.executor.instances", "8") \
     .config("spark.executor.memory", "2g") \
     .config("spark.executor.cores", "1") \
+    .config("spark.jars", "/jars/sedona-spark-shaded-3.5_2.12-1.6.1.jar,/jars/geotools-wrapper-1.6.1-28.2.jar") \
     .getOrCreate()
 
 # Ορισμός του Schema για τα Crimes
@@ -19,7 +20,7 @@ from pyspark.sql.functions import year, to_timestamp
 crimes_schema = StructType([
     StructField("DR_NO", IntegerType()),
     StructField("Date Rptd", StringType()),
-    StructField("DATE_OCC", StringType()),
+    StructField("DATE OCC", StringType()),
     StructField("TIME OCC", IntegerType()),
     StructField("AREA", IntegerType()),
     StructField("AREA NAME", StringType()),
@@ -51,7 +52,8 @@ crimes_df = spark.read.csv(
     "./data/LA_Crime_Data_2020_2025.csv",
     header=True,
     schema=crimes_schema
-)
+)\
+                         .withColumnRenamed("DATE OCC", "DATE_OCC")
 crimes_df = crimes_df.select(col("DR_NO"),col("DATE_OCC"),col("LAT"), col("LON"))
 crimes_df_year = crimes_df.withColumn("DATE_OCC", sf.year(to_timestamp("DATE_OCC", 
                 "yyyy MMM dd hh:mm:ss a"))) 
@@ -71,7 +73,7 @@ crimes_df.select("Year").distinct().show()
 crimes_df.printSchema()
 
 income_schema = StructType([
-    StructField("Zip_Code", IntegerType()),
+    StructField("Zip Code", IntegerType()),
     StructField("Community", StringType()),
     StructField("Estimated Median Income", StringType())
 ])
@@ -80,7 +82,8 @@ income_df1 = spark.read.csv(
     sep=";",
     header=True,
     schema=income_schema,
-)
+)\
+                         .withColumnRenamed("Zip Code", "Zip_Code")
 # Κάνω το string integer
 income_df= income_df1.withColumn("Estimated Median Income",sf.regexp_replace("Estimated Median Income", "[$,]", "").cast("int"))
 income_df.printSchema()
@@ -105,7 +108,13 @@ blocks_df=blocks_df.filter(col("CITY") == "Los Angeles")
 blocks_df.printSchema()
 
 print("============================================================================================")
-
+# Κάνω geometry τις συντεταγμένες του crimes για να μπορέσω να τα τοποθετήσω στa blocks 
+# Convert to geometry
+crimes_df = crimes_df.withColumn(
+    "crime_geom",
+    sf.expr("ST_Point(cast(LON as double), cast(LAT as double))") 
+)
+print(crimes_df.show(5))
 # Join blocks with income data
 import time
 start_time_join_inc=time.time()
@@ -178,4 +187,3 @@ correlation = subset.stat.corr("Income_per_Capita", "Crimes_per_Person")
 print("Correlation =", correlation)
 end_time_cor_high=time.time()
 print(f"Execution Time (cor_high): {end_time_cor_high - start_time_cor_high:.2f} seconds")
-

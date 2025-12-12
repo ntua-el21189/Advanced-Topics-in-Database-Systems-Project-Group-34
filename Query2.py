@@ -18,7 +18,7 @@ spark = SparkSession \
 crimes_schema = StructType([
     StructField("DR_NO", IntegerType()),
     StructField("Date Rptd", StringType()),
-    StructField("DATE_OCC", StringType()),
+    StructField("DATE OCC", StringType()),
     StructField("TIME OCC", IntegerType()),
     StructField("AREA", IntegerType()),
     StructField("AREA NAME", StringType()),
@@ -29,7 +29,7 @@ crimes_schema = StructType([
     StructField("Mocodes", IntegerType()),
     StructField("Vict Age", IntegerType()),
     StructField("Vict Sex", StringType()),
-    StructField("Vict_Descent", StringType()),
+    StructField("Vict Descent", StringType()),
     StructField("Premis Cd", IntegerType()),
     StructField("Premis Desc", StringType()),
     StructField("Weapon Used Cd", IntegerType()),
@@ -48,19 +48,24 @@ crimes_schema = StructType([
 
 crimes_df1 = spark.read.csv("./data/LA_Crime_Data_2010_2019.csv", \
                          header=True, \
-                         schema= crimes_schema)
+                         schema= crimes_schema)\
+                         .withColumnRenamed("Vict Descent", "Vict_Descent")\
+                         .withColumnRenamed("DATE OCC", "DATE_OCC")
 
 crimes_df2 =  spark.read.csv("./data/LA_Crime_Data_2020_2025.csv", \
                          header=True, \
-                         schema= crimes_schema)
+                         schema= crimes_schema)\
+                         .withColumnRenamed("Vict Descent", "Vict_Descent")\
+                         .withColumnRenamed("DATE OCC", "DATE_OCC")
 REcodes_schema = StructType([
-    StructField("Vict_Descent", StringType()),
-    StructField("Vict_Descent_Full", StringType())
+    StructField("Vict Descent", StringType()),
+    StructField("Vict Descent Full", StringType())
 ])
 REcodes_df =spark.read.csv("./data/RE_codes.csv", \
                          header=True, \
-                         schema= REcodes_schema)
-REcodes_df.printSchema()
+                         schema= REcodes_schema)\
+                            .withColumnRenamed("Vict Descent", "Vict_Descent")\
+                            .withColumnRenamed("Vict Descent Full", "Vict_Descent_Full")
 
 crimes_df1 = crimes_df1.select(col("DATE_OCC"), col("Vict_Descent"))
 crimes_df2 = crimes_df2.select(col("DATE_OCC"), col("Vict_Descent"))
@@ -106,12 +111,6 @@ print(f"Execution Time (DataFrame API): {end_time_df - start_time_df:.2f} second
 
 crimes_df.createOrReplaceTempView("crimes1")
 REcodes_df.createOrReplaceTempView("REcodes")
-prep_crimes="SELECT Vict_Descent FROM crimes1 LIMIT (2)"
-prep_re="SELECT Vict_Descent  FROM REcodes LIMIT (2)"
-prep_crimes=spark.sql(prep_crimes)
-prep_crimes.show()
-prep_re=spark.sql(prep_re)
-prep_re.show()
 
 sql_helper = "SELECT YEAR(TO_TIMESTAMP( DATE_OCC , 'yyyy MMM dd hh:mm:ss a')) AS Year, Vict_Descent FROM crimes1"
 crimes_final=spark.sql(sql_helper)
@@ -169,3 +168,4 @@ q1_result_from_sql.show()
 end_time_sql = time.time()
 print(f"Execution Time (SQL API): {end_time_sql - start_time_sql:.2f} seconds")
 #end time
+# χάνεται μια μόνο μέτρηση στο 2025
