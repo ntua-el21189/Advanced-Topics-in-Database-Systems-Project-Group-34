@@ -1,0 +1,59 @@
+Dataframe API
+
++----+--------------------+-----------------+-----+
+|Year|   Vict_Descent_Full|Number_of_Victims|    %|
++----+--------------------+-----------------+-----+
+|2025|Hispanic/Latin/Me...|               34|35.05|
+|2025|             Unknown|               24|24.74|
+|2025|               White|               13|13.40|
+|2024|Hispanic/Latin/Me...|            28576|22.40|
+|2024|               White|            22958|18.00|
+|2023|Hispanic/Latin/Me...|            69401|29.87|
+|2023|               White|            44615|19.20|
+|2022|Hispanic/Latin/Me...|            73111|31.08|
+|2022|               White|            46695|19.85|
+|2022|               Black|            34634|14.72|
+|2021|Hispanic/Latin/Me...|            63676|30.34|
+|2021|               White|            44523|21.21|
+|2021|               Black|            30173|14.38|
+|2020|Hispanic/Latin/Me...|            61606|30.83|
+|2020|               White|            42638|21.34|
+|2020|               Black|            28785|14.40|
+|2019|Hispanic/Latin/Me...|            72458|33.10|
+|2019|               White|            48863|22.32|
+|2019|               Black|            33157|15.15|
+|2018|Hispanic/Latin/Me...|            75958|33.06|
++----+--------------------+-----------------+-----+
+only showing top 20 rows
+
+Execution Time (DataFrame API): 12.98 seconds
+
+SQL API
+
++----+--------------------+-----------------+-----+
+|Year|   Vict_Descent_Full|Number_of_Victims|    %|
++----+--------------------+-----------------+-----+
+|2025|Hispanic/Latin/Me...|               34|35.05|
+|2025|             Unknown|               24|24.74|
+|2025|               White|               13|13.40|
+|2024|Hispanic/Latin/Me...|            28576|22.40|
+|2024|               White|            22958|18.00|
+|2023|Hispanic/Latin/Me...|            69401|29.87|
+|2023|               White|            44615|19.20|
+|2022|Hispanic/Latin/Me...|            73111|31.08|
+|2022|               White|            46695|19.85|
+|2022|               Black|            34634|14.72|
+|2021|Hispanic/Latin/Me...|            63676|30.34|
+|2021|               White|            44523|21.21|
+|2021|               Black|            30173|14.38|
+|2020|Hispanic/Latin/Me...|            61606|30.83|
+|2020|               White|            42638|21.34|
+|2020|               Black|            28785|14.40|
+|2019|Hispanic/Latin/Me...|            72458|33.10|
+|2019|               White|            48863|22.32|
+|2019|               Black|            33157|15.15|
+|2018|Hispanic/Latin/Me...|            75958|33.06|
++----+--------------------+-----------------+-----+
+only showing top 20 rows
+
+Execution Time (DataFrame API): 12.98 seconds
