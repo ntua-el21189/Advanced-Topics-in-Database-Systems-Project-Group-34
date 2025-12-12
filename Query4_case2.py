@@ -1,19 +1,24 @@
 #Fix the configurations for the spark executors
 
-
-# %%configure -f
-# {
-#     "conf":{
-#         "spark.executor.instances": "2",
-#         "spark.executor.memory": "4g,
-#         "spark.executor.cores": "2"
-#     }
-# }
+from pyspark import SparkConf, SparkContext
+conf = SparkConf()
+conf.set('spark.executor.memory', '4g')
+conf.set('spark.executor.cores', '2')
+conf.set('spark.executor.instances', '2')   
+# Pandas API on Spark automatically uses this Spark context with the configurations set.
+SparkContext(conf=conf) 
 
 #Υλοποίηση με DataFrames
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructField, StructType, IntegerType, FloatType, StringType
 from pyspark.sql.functions import col
+
+
+spark = SparkSession.builder \
+    .appName("MyApp") \
+    .config(conf=conf) \
+    .config("spark.jars", "/jars/sedona-spark-shaded-3.5_2.12-1.6.1.jar,/jars/geotools-wrapper-1.6.1-28.2.jar") \
+    .getOrCreate()
 
 crimes_schema = StructType([
     StructField("DR_NO", IntegerType()),

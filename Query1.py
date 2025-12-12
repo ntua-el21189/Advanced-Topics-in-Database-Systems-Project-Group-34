@@ -20,7 +20,10 @@ SparkContext(conf=conf)
 from pyspark.sql import SparkSession
 import csv
 import time
-
+spark = SparkSession.builder \
+    .appName("MyApp") \
+    .config(conf=conf) \
+    .getOrCreate()
 sc = spark.sparkContext 
 
 rdd1 = sc.textFile("./data/LA_Crime_Data_2010_2019.csv")\
