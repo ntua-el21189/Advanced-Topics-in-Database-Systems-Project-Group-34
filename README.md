@@ -20,7 +20,7 @@ The data must be downloaded locally and saved in a file named "data" within the 
 
 1. Clone the repository
 2. Give the installer.sh file persmission to execute 
-3. Run the install.sh
+3. Run the installer.sh
 4. Make sure the created virtual env is active and is the selected python interpreter 
 5. After successfull installation of all the prerequisites run the code for each Query by using
 the command
