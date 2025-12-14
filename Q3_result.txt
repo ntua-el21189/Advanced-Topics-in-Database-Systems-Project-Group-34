@@ -1,0 +1,68 @@
+Execution Time (RDDs): 26.29 seconds
+
+('0344', 'Removes vict property', 1002900)
+('1822', 'Stranger', 548422)
+('0416', 'Hit-Hit w/ weapon', 404773)
+('0329', 'Vandalized', 377536)
+('0913', 'Victim knew Suspect', 278618)
+('2000', 'Domestic violence', 256188)
+('1300', 'Vehicle involved', 219082)
+('0400', 'Force used', 213165)
+('1402', 'Evidence Booked (any crime)', 177470)
+('1609', 'Smashed', 131229)
+('1309', 'Susp uses vehicle', 122108)
+('1202', 'Victim was aged (60 & over) or blind/physically disabled/unable to care for self', 120238)
+('0325', 'Took merchandise', 120159)
+('1814', 'Susp is/was current/former boyfriend/girlfriend', 118073)
+('0444', 'Pushed', 116763)
+('1501', 'Other MO (see rpt)', 115589)
+('1307', 'Breaks window', 113609)
+('0334', 'Brandishes weapon', 105665)
+Για λόγους απλότητας παραλείπουμε τις υπόλοιπες γραμμές.
+
++-------+--------------------+-------+
+|Mocodes|         Description|  count|
++-------+--------------------+-------+
+|   0344|Removes vict prop...|1002900|
+|   1822|            Stranger| 548422|
+|   0416|   Hit-Hit w/ weapon| 404773|
+|   0329|          Vandalized| 377536|
+|   0913| Victim knew Suspect| 278618|
+|   2000|   Domestic violence| 256188|
+|   1300|    Vehicle involved| 219082|
+|   0400|          Force used| 213165|
+|   1402|Evidence Booked (...| 177470|
+|   1609|             Smashed| 131229|
+|   1309|   Susp uses vehicle| 122108|
+|   1202|Victim was aged (...| 120238|
+|   0325|    Took merchandise| 120159|
+|   1814|Susp is/was curre...| 118073|
+|   0444|              Pushed| 116763|
+|   1501|  Other MO (see rpt)| 115589|
+|   1307|       Breaks window| 113609|
+|   0334|   Brandishes weapon| 105665|
+|   2004|Suspect is homele...|  93426|
+|   0432|        Intimidation|  83562|
++-------+--------------------+-------+
+only showing top 20 rows
+
+None
+Execution Time (DataFrame API): 8.40 seconds
+== Physical Plan ==
+AdaptiveSparkPlan (16)
++- Sort (15)
+   +- Exchange (14)
+      +- Project (13)
+         +- BroadcastHashJoin Inner BuildRight (12)
+            :- HashAggregate (7)
+            :  +- Exchange (6)
+            :     +- HashAggregate (5)
+            :        +- Generate (4)
+            :           +- Union (3)
+            :              :- Scan csv  (1)
+            :              +- Scan csv  (2)
+            +- BroadcastExchange (11)
+               +- Project (10)
+                  +- Filter (9)
+                     +- Scan csv  (8)
+
