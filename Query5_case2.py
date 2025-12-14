@@ -171,8 +171,6 @@ LA_areas_final = crimes_in_block_with_inc \
     .withColumn("income_per_capita", col("total_income") / col("total_population"))
 LA_areas_final.printSchema()
 
-# Θα πρέπει να καταλήξω σε κάτι τέτοιο 
-#clean_stats = final.filter(col("total_population") > 1000)##
 start_time_cor=time.time()
 correlation = LA_areas_final.stat.corr("income_per_capita", "crimes_per_person")
 print("Correlation =", correlation)
