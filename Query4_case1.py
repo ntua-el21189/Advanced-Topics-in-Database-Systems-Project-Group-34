@@ -13,6 +13,7 @@ from pyspark.sql.functions import col
 import pyspark.sql.functions as sf
 from sedona.spark import *
 
+#increased the RAM available to the spark driver to 6g to avoid out of memory issues
 spark = SparkSession.builder \
     .appName("Q4_case1") \
     .config(conf=conf) \
