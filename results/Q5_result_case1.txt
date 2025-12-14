@@ -1,0 +1,189 @@
+Case 1: 
+
+blocks_and_income join
+
++-------------+-----+----------------+--------------------+------+-----------+
+|         COMM|POP20|Income_per_block|            geometry|ZCTA20|       CITY|
++-------------+-----+----------------+--------------------+------+-----------+
+|Granada Hills|   80|         2197440|POLYGON ((-118.48...| 91344|Los Angeles|
+|Granada Hills|   63|         1778880|POLYGON ((-118.48...| 91344|Los Angeles|
+|Granada Hills|   56|         2616000|POLYGON ((-118.49...| 91344|Los Angeles|
+|Granada Hills|   99|         3139200|POLYGON ((-118.50...| 91344|Los Angeles|
+|   Chatsworth|  242|         8231463|POLYGON ((-118.58...| 91311|Los Angeles|
+|   Chatsworth|  206|         6503872|POLYGON ((-118.58...| 91311|Los Angeles|
+|Granada Hills|   56|         1674240|POLYGON ((-118.47...| 91344|Los Angeles|
+|Granada Hills|   63|         1883520|POLYGON ((-118.47...| 91344|Los Angeles|
+|      Pacoima|   53|          576712|POLYGON ((-118.42...| 91331|Los Angeles|
+|      Sunland|   19|          505872|POLYGON ((-118.35...| 91342|Los Angeles|
+|Granada Hills|  117|         4080960|POLYGON ((-118.49...| 91344|Los Angeles|
+|Granada Hills|   77|         3243840|POLYGON ((-118.51...| 91344|Los Angeles|
+| Porter Ranch|    0|               0|POLYGON ((-118.54...| 91326|Los Angeles|
+| Porter Ranch|   65|         2085152|POLYGON ((-118.55...| 91326|Los Angeles|
+|Mission Hills|   25|          856590|POLYGON ((-118.46...| 91345|Los Angeles|
+|Granada Hills|   84|         2929920|POLYGON ((-118.49...| 91344|Los Angeles|
+|Granada Hills|   42|         1778880|POLYGON ((-118.49...| 91344|Los Angeles|
+|Granada Hills|   89|         2825280|POLYGON ((-118.51...| 91344|Los Angeles|
+|Granada Hills|   75|         2092800|POLYGON ((-118.52...| 91344|Los Angeles|
+| Porter Ranch|  167|         6776744|POLYGON ((-118.54...| 91326|Los Angeles|
++-------------+-----+----------------+--------------------+------+-----------+
+only showing top 20 rows
+
+Execution Time (DataFrame API): 14.36 seconds
+
+>>>crimes_with_block_with_inc join
+
++--------------------+-----------+----------------+----------------+------------------+-----------+
+|            geometry|       CITY|Income_per_block|block_population|              COMM|crime_count|
++--------------------+-----------+----------------+----------------+------------------+-----------+
+|POLYGON ((-118.21...|Los Angeles|          319914|              42|Wholesale District|         42|
+|POLYGON ((-118.23...|Los Angeles|               0|               0|Wholesale District|          1|
+|POLYGON ((-118.21...|Los Angeles|               0|               3|   Lincoln Heights|         24|
+|POLYGON ((-118.24...|Los Angeles|               0|               0|           Central|          1|
+|POLYGON ((-118.37...|Los Angeles|         1117270|              37|     South Carthay|          6|
+|POLYGON ((-118.21...|Los Angeles|               0|               0|Wholesale District|          1|
+|POLYGON ((-118.38...|Los Angeles|         1428650|              51|   North Hollywood|          9|
+|POLYGON ((-118.22...|Los Angeles|         3054668|             121|    Elysian Valley|          7|
+|POLYGON ((-118.36...|Los Angeles|         1562040|             124|        Sun Valley|          8|
+|POLYGON ((-118.42...|Los Angeles|         2247721|              64|      Sherman Oaks|          3|
+|POLYGON ((-118.60...|Los Angeles|         3726176|             101|    Woodland Hills|          2|
+|POLYGON ((-118.44...|Los Angeles|          707083|              66|          Van Nuys|          7|
+|POLYGON ((-118.21...|Los Angeles|         7310898|             511|     Boyle Heights|         30|
+|POLYGON ((-118.21...|Los Angeles|         2173185|             139|     Boyle Heights|        180|
+|POLYGON ((-118.45...|Los Angeles|         1281170|              53|      Sherman Oaks|          1|
+|POLYGON ((-118.48...|Los Angeles|         2141400|              83|       North Hills|          8|
+|POLYGON ((-118.32...|Los Angeles|         7664400|             315|           Melrose|         13|
+|POLYGON ((-118.37...|Los Angeles|         6361383|             277|   North Hollywood|         30|
+|POLYGON ((-118.52...|Los Angeles|         2181216|              87|            Reseda|          4|
+|POLYGON ((-118.38...|Los Angeles|         1714380|              98|   North Hollywood|          3|
++--------------------+-----------+----------------+----------------+------------------+-----------+
+only showing top 20 rows
+
+Execution Time (join): 26.86 seconds
+== Physical Plan ==
+AdaptiveSparkPlan (22)
++- SortAggregate (21)
+   +- Sort (20)
+      +- Exchange (19)
+         +- SortAggregate (18)
+            +- Sort (17)
+               +- Project (16)
+                  +- RangeJoin (15)
+                     :- Project (3)
+                     :  +- Filter (2)
+                     :     +- Scan csv  (1)
+                     +- Project (14)
+                        +- BroadcastHashJoin Inner BuildRight (13)
+                           :- Project (8)
+                           :  +- Filter (7)
+                           :     +- Generate (6)
+                           :        +- Filter (5)
+                           :           +- Scan geojson  (4)
+                           +- BroadcastExchange (12)
+                              +- Project (11)
+                                 +- Filter (10)
+                                    +- Scan csv  (9)
+
+
+(1) Scan csv 
+Output [3]: [DATE_OCC#2, LAT#26, LON#27]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv]
+PushedFilters: [IsNotNull(LAT), IsNotNull(LON)]
+ReadSchema: struct<DATE_OCC:string,LAT:float,LON:float>
+
+(2) Filter
+Input [3]: [DATE_OCC#2, LAT#26, LON#27]
+Condition : (((year(cast(gettimestamp(DATE_OCC#2, yyyy MMM dd hh:mm:ss a, TimestampType, Some(UTC), false) as date)) IN (2020,2021) AND isnotnull(LAT#26)) AND isnotnull(LON#27)) AND isnotnull( **org.apache.spark.sql.sedona_sql.expressions.ST_Point**  ))
+
+(3) Project
+Output [1]: [ **org.apache.spark.sql.sedona_sql.expressions.ST_Point**   AS crime_geom#309]
+Input [3]: [DATE_OCC#2, LAT#26, LON#27]
+
+(4) Scan geojson 
+Output [1]: [features#144]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Census_Blocks_2020.geojson]
+PushedFilters: [IsNotNull(features)]
+ReadSchema: struct<features:array<struct<geometry:binary,properties:struct<BG20:string,BG20FIP_CURRENT:string,BGFIP20:string,CB20:string,CITY:string,CITYCOMM:string,CITYCOMM_CURRENT:string,CITY_CURRENT:string,COMM:string,COMM_CURRENT:string,COUNTY:string,CT20:string,CTCB20:string,FEAT_TYPE:string,FIP20:string,FIP_CURRENT:string,HD22:bigint,HD_NAME:string,HOUSING20:bigint,OBJECTID:bigint,POP20:bigint,SPA22:bigint,SPA_NAME:string,SUP21:string,SUP_LABEL:string,ShapeSTArea:double,ShapeSTLength:double,State:string,ZCTA20:string>,type:string>>>
+
+(5) Filter
+Input [1]: [features#144]
+Condition : ((size(features#144, true) > 0) AND isnotnull(features#144))
+
+(6) Generate
+Input [1]: [features#144]
+Arguments: explode(features#144), false, [features#152]
+
+(7) Filter
+Input [1]: [features#152]
+Condition : ((isnotnull(features#152.properties.CITY) AND (features#152.properties.CITY = Los Angeles)) AND (isnotnull(features#152.properties.ZCTA20) AND isnotnull(features#152.geometry)))
+
+(8) Project
+Output [6]: [features#152.properties.CITY AS CITY#165, features#152.properties.COMM AS COMM#169, features#152.properties.HOUSING20 AS HOUSING20#179L, features#152.properties.POP20 AS POP20#181L, features#152.properties.ZCTA20 AS ZCTA20#189, features#152.geometry AS geometry#155]
+Input [1]: [features#152]
+
+(9) Scan csv 
+Output [2]: [Zip_Code#119, Estimated Median Income#121]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_income_2021.csv]
+PushedFilters: [IsNotNull(Zip_Code)]
+ReadSchema: struct<Zip_Code:int,Estimated Median Income:string>
+
+(10) Filter
+Input [2]: [Zip_Code#119, Estimated Median Income#121]
+Condition : isnotnull(Zip_Code#119)
+
+(11) Project
+Output [2]: [Zip_Code#119, cast(regexp_replace(Estimated Median Income#121, [$,], , 1) as int) AS Estimated Median Income#125]
+Input [2]: [Zip_Code#119, Estimated Median Income#121]
+
+(12) BroadcastExchange
+Input [2]: [Zip_Code#119, Estimated Median Income#125]
+Arguments: HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)),false), [plan_id=637]
+
+(13) BroadcastHashJoin
+Left keys [1]: [cast(ZCTA20#189 as int)]
+Right keys [1]: [Zip_Code#119]
+Join type: Inner
+Join condition: None
+
+(14) Project
+Output [5]: [COMM#169, POP20#181L, (HOUSING20#179L * cast(Estimated Median Income#125 as bigint)) AS Income_per_block#434L, geometry#155, CITY#165]
+Input [8]: [CITY#165, COMM#169, HOUSING20#179L, POP20#181L, ZCTA20#189, geometry#155, Zip_Code#119, Estimated Median Income#125]
+
+(15) RangeJoin
+Arguments: crime_geom#309: geometry, geometry#155: geometry, WITHIN
+
+(16) Project
+Output [5]: [COMM#169, POP20#181L, Income_per_block#434L, geometry#155, CITY#165]
+Input [6]: [crime_geom#309, COMM#169, POP20#181L, Income_per_block#434L, geometry#155, CITY#165]
+
+(17) Sort
+Input [5]: [COMM#169, POP20#181L, Income_per_block#434L, geometry#155, CITY#165]
+Arguments: [geometry#155 ASC NULLS FIRST], false, 0
+
+(18) SortAggregate
+Input [5]: [COMM#169, POP20#181L, Income_per_block#434L, geometry#155, CITY#165]
+Keys [1]: [geometry#155]
+Functions [5]: [partial_first(CITY#165, false), partial_first(Income_per_block#434L, false), partial_first(POP20#181L, false), partial_first(COMM#169, false), partial_count(1)]
+Aggregate Attributes [9]: [first#577, valueSet#578, first#581L, valueSet#582, first#585L, valueSet#586, first#589, valueSet#590, count#593L]
+Results [10]: [geometry#155, first#579, valueSet#580, first#583L, valueSet#584, first#587L, valueSet#588, first#591, valueSet#592, count#594L]
+
+(19) Exchange
+Input [10]: [geometry#155, first#579, valueSet#580, first#583L, valueSet#584, first#587L, valueSet#588, first#591, valueSet#592, count#594L]
+Arguments: hashpartitioning(geometry#155, 1000), ENSURE_REQUIREMENTS, [plan_id=646]
+
+(20) Sort
+Input [10]: [geometry#155, first#579, valueSet#580, first#583L, valueSet#584, first#587L, valueSet#588, first#591, valueSet#592, count#594L]
+Arguments: [geometry#155 ASC NULLS FIRST], false, 0
+
+(21) SortAggregate
+Input [10]: [geometry#155, first#579, valueSet#580, first#583L, valueSet#584, first#587L, valueSet#588, first#591, valueSet#592, count#594L]
+Keys [1]: [geometry#155]
+Functions [5]: [first(CITY#165, false), first(Income_per_block#434L, false), first(POP20#181L, false), first(COMM#169, false), count(1)]
+Aggregate Attributes [5]: [first(CITY#165)()#543, first(Income_per_block#434L)()#545L, first(POP20#181L)()#547L, first(COMM#169)()#549, count(1)#551L]
+Results [6]: [geometry#155, first(CITY#165)()#543 AS CITY#544, first(Income_per_block#434L)()#545L AS Income_per_block#546L, first(POP20#181L)()#547L AS block_population#548L, first(COMM#169)()#549 AS COMM#550, count(1)#551L AS crime_count#552L]
+
+(22) AdaptiveSparkPlan
+Output [6]: [geometry#155, CITY#544, Income_per_block#546L, block_population#548L, COMM#550, crime_count#552L]
+Arguments: isFinalPlan=false
