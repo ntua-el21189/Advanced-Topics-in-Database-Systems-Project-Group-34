@@ -1,0 +1,359 @@
+Dataframes API
++----------------+------------------+----------------+
+|        DIVISION|  average_distance|number_of_crimes|
++----------------+------------------+----------------+
+|       HOLLYWOOD| 2.073555380558327|          224124|
+|        VAN NUYS| 2.939218980063842|          208129|
+|       SOUTHWEST| 2.191446044760306|          189126|
+|        WILSHIRE| 2.593363412926207|          186376|
+|     77TH STREET|1.7170717708817327|          170620|
+| NORTH HOLLYWOOD|2.6424535892470318|          168096|
+|         OLYMPIC|1.7289182568920176|          162805|
+|         PACIFIC| 3.853507211076137|          162027|
+|         CENTRAL|0.9933681971560834|          154689|
+|         RAMPART|1.5342157496329234|          153204|
+|       SOUTHEAST|2.4438597938839743|          143803|
+|     WEST VALLEY| 3.021577711891325|          136622|
+|        FOOTHILL| 4.260093000055929|          132482|
+|         TOPANGA| 3.297047869369612|          131054|
+|          HARBOR|3.7016925806773346|          127071|
+|      HOLLENBECK| 2.677394458110065|          116235|
+|WEST LOS ANGELES| 2.789551816516951|          115969|
+|          NEWTON|1.6352172122042823|          111392|
+|       NORTHEAST| 3.622949098703555|          108243|
+|         MISSION| 3.676244541299506|           97926|
++----------------+------------------+----------------+
+only showing top 20 rows
+
+None
++-----------+---------+-----------+--------------------+
+|          x|        y|   DIVISION|        station_geom|
++-----------+---------+-----------+--------------------+
+| -118.28924| 33.75766|     HARBOR|POINT (-118.28923...|
+| -118.27539| 33.93863|  SOUTHEAST|POINT (-118.27539...|
+| -118.27767|33.970306|77TH STREET|POINT (-118.27767...|
+| -118.41984|33.991653|    PACIFIC|POINT (-118.41983...|
+|-118.305145|34.010574|  SOUTHWEST|POINT (-118.30514...|
++-----------+---------+-----------+--------------------+
+only showing top 5 rows
+
+None
+Execution Time (Data Frames API): 28.86 seconds
+== Physical Plan ==
+AdaptiveSparkPlan (26)
++- Sort (25)
+   +- Exchange (24)
+      +- HashAggregate (23)
+         +- Exchange (22)
+            +- HashAggregate (21)
+               +- Project (20)
+                  +- Filter (19)
+                     +- Window (18)
+                        +- WindowGroupLimit (17)
+                           +- Sort (16)
+                              +- Exchange (15)
+                                 +- WindowGroupLimit (14)
+                                    +- Sort (13)
+                                       +- Project (12)
+                                          +- BroadcastNestedLoopJoin Cross BuildRight (11)
+                                             :- Union (7)
+                                             :  :- Project (3)
+                                             :  :  +- Filter (2)
+                                             :  :     +- Scan csv  (1)
+                                             :  +- Project (6)
+                                             :     +- Filter (5)
+                                             :        +- Scan csv  (4)
+                                             +- BroadcastExchange (10)
+                                                +- Project (9)
+                                                   +- Scan csv  (8)
+
+
+(1) Scan csv 
+Output [3]: [DR_NO#0, LAT#26, LON#27]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2010_2019.csv]
+PushedFilters: [Not(EqualTo(LAT,0.0)), Not(EqualTo(LON,0.0)), IsNotNull(LAT), IsNotNull(LON)]
+ReadSchema: struct<DR_NO:int,LAT:float,LON:float>
+
+(2) Filter
+Input [3]: [DR_NO#0, LAT#26, LON#27]
+Condition : (((NOT (LAT#26 = 0.0) AND NOT (LON#27 = 0.0)) AND isnotnull(LAT#26)) AND isnotnull(LON#27))
+
+(3) Project
+Output [2]: [DR_NO#0,  **org.apache.spark.sql.sedona_sql.expressions.ST_Point**   AS crime_geom#228]
+Input [3]: [DR_NO#0, LAT#26, LON#27]
+
+(4) Scan csv 
+Output [3]: [DR_NO#71, LAT#97, LON#98]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv]
+PushedFilters: [Not(EqualTo(LAT,0.0)), Not(EqualTo(LON,0.0)), IsNotNull(LAT), IsNotNull(LON)]
+ReadSchema: struct<DR_NO:int,LAT:float,LON:float>
+
+(5) Filter
+Input [3]: [DR_NO#71, LAT#97, LON#98]
+Condition : (((NOT (LAT#97 = 0.0) AND NOT (LON#98 = 0.0)) AND isnotnull(LAT#97)) AND isnotnull(LON#98))
+
+(6) Project
+Output [2]: [DR_NO#71,  **org.apache.spark.sql.sedona_sql.expressions.ST_Point**   AS crime_geom#501]
+Input [3]: [DR_NO#71, LAT#97, LON#98]
+
+(7) Union
+
+(8) Scan csv 
+Output [3]: [x#134, y#135, DIVISION#137]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Police_Stations.csv]
+ReadSchema: struct<x:float,y:float,DIVISION:string>
+
+(9) Project
+Output [2]: [DIVISION#137,  **org.apache.spark.sql.sedona_sql.expressions.ST_Point**   AS station_geom#233]
+Input [3]: [x#134, y#135, DIVISION#137]
+
+(10) BroadcastExchange
+Input [2]: [DIVISION#137, station_geom#233]
+Arguments: IdentityBroadcastMode, [plan_id=583]
+
+(11) BroadcastNestedLoopJoin
+Join type: Cross
+Join condition: None
+
+(12) Project
+Output [3]: [DR_NO#0, DIVISION#137, ( **org.apache.spark.sql.sedona_sql.expressions.ST_DistanceSphere**   / 1000.0) AS distance_km#353]
+Input [4]: [DR_NO#0, crime_geom#228, DIVISION#137, station_geom#233]
+
+(13) Sort
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#353]
+Arguments: [DR_NO#0 ASC NULLS FIRST, distance_km#353 ASC NULLS FIRST], false, 0
+
+(14) WindowGroupLimit
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#353]
+Arguments: [DR_NO#0], [distance_km#353 ASC NULLS FIRST], row_number(), 1, Partial
+
+(15) Exchange
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#353]
+Arguments: hashpartitioning(DR_NO#0, 1000), ENSURE_REQUIREMENTS, [plan_id=590]
+
+(16) Sort
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#353]
+Arguments: [DR_NO#0 ASC NULLS FIRST, distance_km#353 ASC NULLS FIRST], false, 0
+
+(17) WindowGroupLimit
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#353]
+Arguments: [DR_NO#0], [distance_km#353 ASC NULLS FIRST], row_number(), 1, Final
+
+(18) Window
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#353]
+Arguments: [row_number() windowspecdefinition(DR_NO#0, distance_km#353 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#360], [DR_NO#0], [distance_km#353 ASC NULLS FIRST]
+
+(19) Filter
+Input [4]: [DR_NO#0, DIVISION#137, distance_km#353, rn#360]
+Condition : (rn#360 = 1)
+
+(20) Project
+Output [2]: [DIVISION#137, distance_km#353]
+Input [4]: [DR_NO#0, DIVISION#137, distance_km#353, rn#360]
+
+(21) HashAggregate
+Input [2]: [DIVISION#137, distance_km#353]
+Keys [1]: [DIVISION#137]
+Functions [2]: [partial_avg(distance_km#353), partial_count(1)]
+Aggregate Attributes [3]: [sum#394, count#395L, count#398L]
+Results [4]: [DIVISION#137, sum#396, count#397L, count#399L]
+
+(22) Exchange
+Input [4]: [DIVISION#137, sum#396, count#397L, count#399L]
+Arguments: hashpartitioning(DIVISION#137, 1000), ENSURE_REQUIREMENTS, [plan_id=598]
+
+(23) HashAggregate
+Input [4]: [DIVISION#137, sum#396, count#397L, count#399L]
+Keys [1]: [DIVISION#137]
+Functions [2]: [avg(distance_km#353), count(1)]
+Aggregate Attributes [2]: [avg(distance_km#353)#377, count(1)#379L]
+Results [3]: [DIVISION#137, avg(distance_km#353)#377 AS average_distance#378, count(1)#379L AS number_of_crimes#380L]
+
+(24) Exchange
+Input [3]: [DIVISION#137, average_distance#378, number_of_crimes#380L]
+Arguments: rangepartitioning(number_of_crimes#380L DESC NULLS LAST, 1000), ENSURE_REQUIREMENTS, [plan_id=601]
+
+(25) Sort
+Input [3]: [DIVISION#137, average_distance#378, number_of_crimes#380L]
+Arguments: [number_of_crimes#380L DESC NULLS LAST], true, 0
+
+(26) AdaptiveSparkPlan
+Output [3]: [DIVISION#137, average_distance#378, number_of_crimes#380L]
+Arguments: isFinalPlan=false
+
+SQL API:
++----------------+------------------+----------+
+|        DIVISION|      avg_distance|num_crimes|
++----------------+------------------+----------+
+|       HOLLYWOOD| 2.073555380558326|    224124|
+|        VAN NUYS|2.9392189800638437|    208129|
+|       SOUTHWEST| 2.191446044760306|    189126|
+|        WILSHIRE|2.5933634129262075|    186376|
+|     77TH STREET|1.7170717708817327|    170620|
+| NORTH HOLLYWOOD|2.6424535892470318|    168096|
+|         OLYMPIC|1.7289182568920174|    162805|
+|         PACIFIC| 3.853507211076136|    162027|
+|         CENTRAL|0.9933681971560833|    154689|
+|         RAMPART| 1.534215749632923|    153204|
+|       SOUTHEAST|2.4438597938839752|    143803|
+|     WEST VALLEY|3.0215777118913256|    136622|
+|        FOOTHILL|  4.26009300005593|    132482|
+|         TOPANGA| 3.297047869369611|    131054|
+|          HARBOR|3.7016925806773355|    127071|
+|      HOLLENBECK|2.6773944581100646|    116235|
+|WEST LOS ANGELES| 2.789551816516951|    115969|
+|          NEWTON|1.6352172122042823|    111392|
+|       NORTHEAST| 3.622949098703553|    108243|
+|         MISSION|3.6762445412995057|     97926|
++----------------+------------------+----------+
+only showing top 20 rows
+
+None
+Execution Time (SQL API): 29.12 seconds
+== Physical Plan ==
+AdaptiveSparkPlan (26)
++- Sort (25)
+   +- Exchange (24)
+      +- HashAggregate (23)
+         +- Exchange (22)
+            +- HashAggregate (21)
+               +- Project (20)
+                  +- Filter (19)
+                     +- Window (18)
+                        +- WindowGroupLimit (17)
+                           +- Sort (16)
+                              +- Exchange (15)
+                                 +- WindowGroupLimit (14)
+                                    +- Sort (13)
+                                       +- Project (12)
+                                          +- BroadcastNestedLoopJoin Cross BuildRight (11)
+                                             :- Union (7)
+                                             :  :- Project (3)
+                                             :  :  +- Filter (2)
+                                             :  :     +- Scan csv  (1)
+                                             :  +- Project (6)
+                                             :     +- Filter (5)
+                                             :        +- Scan csv  (4)
+                                             +- BroadcastExchange (10)
+                                                +- Project (9)
+                                                   +- Scan csv  (8)
+
+
+(1) Scan csv 
+Output [3]: [DR_NO#0, LAT#26, LON#27]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2010_2019.csv]
+PushedFilters: [Not(EqualTo(LAT,0.0)), Not(EqualTo(LON,0.0)), IsNotNull(LAT), IsNotNull(LON)]
+ReadSchema: struct<DR_NO:int,LAT:float,LON:float>
+
+(2) Filter
+Input [3]: [DR_NO#0, LAT#26, LON#27]
+Condition : (((NOT (LAT#26 = 0.0) AND NOT (LON#27 = 0.0)) AND isnotnull(LAT#26)) AND isnotnull(LON#27))
+
+(3) Project
+Output [2]: [DR_NO#0,  **org.apache.spark.sql.sedona_sql.expressions.ST_Point**   AS crime_geom#228]
+Input [3]: [DR_NO#0, LAT#26, LON#27]
+
+(4) Scan csv 
+Output [3]: [DR_NO#71, LAT#97, LON#98]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Crime_Data/LA_Crime_Data_2020_2025.csv]
+PushedFilters: [Not(EqualTo(LAT,0.0)), Not(EqualTo(LON,0.0)), IsNotNull(LAT), IsNotNull(LON)]
+ReadSchema: struct<DR_NO:int,LAT:float,LON:float>
+
+(5) Filter
+Input [3]: [DR_NO#71, LAT#97, LON#98]
+Condition : (((NOT (LAT#97 = 0.0) AND NOT (LON#98 = 0.0)) AND isnotnull(LAT#97)) AND isnotnull(LON#98))
+
+(6) Project
+Output [2]: [DR_NO#71,  **org.apache.spark.sql.sedona_sql.expressions.ST_Point**   AS crime_geom#459]
+Input [3]: [DR_NO#71, LAT#97, LON#98]
+
+(7) Union
+
+(8) Scan csv 
+Output [3]: [x#134, y#135, DIVISION#137]
+Batched: false
+Location: InMemoryFileIndex [s3://initial-notebook-data-bucket-dblab-905418150721/project_data/LA_Police_Stations.csv]
+ReadSchema: struct<x:float,y:float,DIVISION:string>
+
+(9) Project
+Output [2]: [DIVISION#137,  **org.apache.spark.sql.sedona_sql.expressions.ST_Point**   AS station_geom#233]
+Input [3]: [x#134, y#135, DIVISION#137]
+
+(10) BroadcastExchange
+Input [2]: [DIVISION#137, station_geom#233]
+Arguments: IdentityBroadcastMode, [plan_id=593]
+
+(11) BroadcastNestedLoopJoin
+Join type: Cross
+Join condition: None
+
+(12) Project
+Output [3]: [DR_NO#0, DIVISION#137, ( **org.apache.spark.sql.sedona_sql.expressions.ST_DistanceSphere**   / 1000.0) AS distance_km#341]
+Input [4]: [DR_NO#0, crime_geom#228, DIVISION#137, station_geom#233]
+
+(13) Sort
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#341]
+Arguments: [DR_NO#0 ASC NULLS FIRST, distance_km#341 ASC NULLS FIRST], false, 0
+
+(14) WindowGroupLimit
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#341]
+Arguments: [DR_NO#0], [distance_km#341 ASC NULLS FIRST], row_number(), 1, Partial
+
+(15) Exchange
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#341]
+Arguments: hashpartitioning(DR_NO#0, 1000), ENSURE_REQUIREMENTS, [plan_id=600]
+
+(16) Sort
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#341]
+Arguments: [DR_NO#0 ASC NULLS FIRST, distance_km#341 ASC NULLS FIRST], false, 0
+
+(17) WindowGroupLimit
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#341]
+Arguments: [DR_NO#0], [distance_km#341 ASC NULLS FIRST], row_number(), 1, Final
+
+(18) Window
+Input [3]: [DR_NO#0, DIVISION#137, distance_km#341]
+Arguments: [row_number() windowspecdefinition(DR_NO#0, distance_km#341 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rn#347], [DR_NO#0], [distance_km#341 ASC NULLS FIRST]
+
+(19) Filter
+Input [4]: [DR_NO#0, DIVISION#137, distance_km#341, rn#347]
+Condition : (rn#347 = 1)
+
+(20) Project
+Output [2]: [DIVISION#137, distance_km#341]
+Input [4]: [DR_NO#0, DIVISION#137, distance_km#341, rn#347]
+
+(21) HashAggregate
+Input [2]: [DIVISION#137, distance_km#341]
+Keys [1]: [DIVISION#137]
+Functions [2]: [partial_avg(distance_km#341), partial_count(1)]
+Aggregate Attributes [3]: [sum#372, count#373L, count#376L]
+Results [4]: [DIVISION#137, sum#374, count#375L, count#377L]
+
+(22) Exchange
+Input [4]: [DIVISION#137, sum#374, count#375L, count#377L]
+Arguments: hashpartitioning(DIVISION#137, 1000), ENSURE_REQUIREMENTS, [plan_id=608]
+
+(23) HashAggregate
+Input [4]: [DIVISION#137, sum#374, count#375L, count#377L]
+Keys [1]: [DIVISION#137]
+Functions [2]: [avg(distance_km#341), count(1)]
+Aggregate Attributes [2]: [avg(distance_km#341)#357, count(1)#358L]
+Results [3]: [DIVISION#137, avg(distance_km#341)#357 AS avg_distance#355, count(1)#358L AS num_crimes#356L]
+
+(24) Exchange
+Input [3]: [DIVISION#137, avg_distance#355, num_crimes#356L]
+Arguments: rangepartitioning(num_crimes#356L DESC NULLS LAST, 1000), ENSURE_REQUIREMENTS, [plan_id=611]
+
+(25) Sort
+Input [3]: [DIVISION#137, avg_distance#355, num_crimes#356L]
+Arguments: [num_crimes#356L DESC NULLS LAST], true, 0
+
+(26) AdaptiveSparkPlan
+Output [3]: [DIVISION#137, avg_distance#355, num_crimes#356L]
+Arguments: isFinalPlan=false
