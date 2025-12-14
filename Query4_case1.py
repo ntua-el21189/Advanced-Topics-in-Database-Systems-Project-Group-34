@@ -16,6 +16,7 @@ from sedona.spark import *
 spark = SparkSession.builder \
     .appName("Q4_case1") \
     .config(conf=conf) \
+    .config("spark.driver.memory", "6g") \
     .config("spark.jars", "/jars/sedona-spark-shaded-3.5_2.12-1.6.1.jar,/jars/geotools-wrapper-1.6.1-28.2.jar") \
     .getOrCreate()
 
@@ -121,7 +122,7 @@ w = Window.partitionBy("DR_NO").orderBy(col("distance_km").asc())
 nearest = joined.withColumn("rn", row_number().over(w)).filter(col("rn") == 1).drop("rn")
 
 result = nearest.groupBy("DIVISION").agg(avg("distance_km").alias("average_distance"),count("*").alias("number_of_crimes")).orderBy(col("number_of_crimes").desc())
-print(result.show())
+print(result.limit(20).show())
 print(stations_df.show(5))
 
 end_time_df = time.time()
@@ -169,7 +170,7 @@ results_query = "SELECT \
 
 results_df = spark.sql(results_query)
 
-print(results_df.show())
+print(results_df.limit(20).show())
 end_time_sql = time.time()
 print(f"Execution Time (SQL API): {end_time_sql - start_time_sql:.2f} seconds")
 results_df.explain(mode="formatted")

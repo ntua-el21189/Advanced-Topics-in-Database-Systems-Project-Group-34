@@ -13,10 +13,12 @@ from pyspark.sql.types import StructField, StructType, IntegerType, FloatType, S
 from pyspark.sql.functions import col
 from sedona.spark import *
 
+#increased the RAM available to the spark driver to 6g to avoid out of memory issues
 
 spark = SparkSession.builder \
     .appName("Q4_case2") \
     .config(conf=conf) \
+    .config("spark.driver.memory", "6g") \
     .config("spark.jars", "/jars/sedona-spark-shaded-3.5_2.12-1.6.1.jar,/jars/geotools-wrapper-1.6.1-28.2.jar") \
     .getOrCreate()
 

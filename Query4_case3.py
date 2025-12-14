@@ -17,6 +17,7 @@ from sedona.spark import *
 spark = SparkSession.builder \
     .appName("Q4_case3") \
     .config(conf=conf) \
+    .config("spark.driver.memory", "6g") \
     .config("spark.jars", "/jars/sedona-spark-shaded-3.5_2.12-1.6.1.jar,/jars/geotools-wrapper-1.6.1-28.2.jar") \
     .getOrCreate()
 crimes_schema = StructType([
