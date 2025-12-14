@@ -1,12 +1,3 @@
-# %%configure -f
-# {
-#     "conf":{
-#         "spark.executor.instances": "4",
-#         "spark.executor.memory": "2g",
-#         "spark.executor.cores": "1"
-#     }
-# }
-
 from pyspark import SparkConf, SparkContext
 conf = SparkConf()
 conf.set('spark.executor.memory', '2g')
