@@ -5,17 +5,17 @@ conf = SparkConf()
 conf.set('spark.executor.memory', '4g')
 conf.set('spark.executor.cores', '2')
 conf.set('spark.executor.instances', '2')   
-# Pandas API on Spark automatically uses this Spark context with the configurations set.
-SparkContext(conf=conf) 
+
 
 #Υλοποίηση με DataFrames
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructField, StructType, IntegerType, FloatType, StringType
 from pyspark.sql.functions import col
+from sedona.spark import *
 
 
 spark = SparkSession.builder \
-    .appName("MyApp") \
+    .appName("Q4_case2") \
     .config(conf=conf) \
     .config("spark.jars", "/jars/sedona-spark-shaded-3.5_2.12-1.6.1.jar,/jars/geotools-wrapper-1.6.1-28.2.jar") \
     .getOrCreate()
@@ -85,18 +85,18 @@ print("===============================================================")
 
 from pyspark.sql.functions import col
 from pyspark.sql.functions import expr
-
+sedona = SedonaContext.create(spark)
 
 # Convert to geometry
 crimes_df = crimes_df.withColumn(
     "crime_geom",
-    expr("ST_Point(cast(LON as double), cast(LAT as double))") # Προσπάθησε να το τρέξεις και χωρίς expr()
+    expr("ST_Point(cast(LON as double), cast(LAT as double))") 
 )
 
 # Convert longitude/latitude to geometry
 stations_df = stations_df.withColumn(
     "station_geom",
-    expr("ST_Point(cast(x as double), cast(y as double))") # Προσπάθησε να το τρέξεις και χωρίς expr()
+    expr("ST_Point(cast(x as double), cast(y as double))") 
 )
 
 print(crimes_df.show(5))
@@ -113,7 +113,7 @@ start_time_df = time.time()
 
 joined = crimes_df.crossJoin(stations_df).select(col("DR_NO"),col("crime_geom"),col("DIVISION"),col("station_geom"))
 
-joined = joined.withColumn("distance_km", expr("ST_DistanceSphere(station_geom, crime_geom)")/1000) # Προσπάθησε να το τρέξεις και χωρίς expr()
+joined = joined.withColumn("distance_km", expr("ST_DistanceSphere(station_geom, crime_geom)")/1000) 
 
 # Window: μία ομάδα για κάθε DR_NO, ταξινόμηση με βάση distance
 w = Window.partitionBy("DR_NO").orderBy(col("distance_km").asc())
